@@ -34,7 +34,52 @@ st.sidebar.header("2. Controles de Zoom")
 lim_x = st.sidebar.slider("Zoom Eje X:", min_value=20, max_value=500, value=200, step=10)
 lim_y = st.sidebar.slider("Zoom Eje Y:", min_value=20, max_value=500, value=150, step=10)
 
-st.sidebar.header("3. Agregar Nueva Restricción")
+st.sidebar.header("3. Gestionar Restricciones")
+
+# --- SECCIÓN PARA EDITAR / ELIMINAR RESTRICCIONES ---
+if st.session_state.restricciones:
+    opciones = [f"{i+1}. {r['nombre']}" for i, r in enumerate(st.session_state.restricciones)]
+    seleccion = st.sidebar.selectbox("Seleccionar para Modificar / Eliminar:", opciones)
+    idx_sel = opciones.index(seleccion)
+    r_sel = st.session_state.restricciones[idx_sel]
+
+    # Formulario desplegable para editar la restricción seleccionada
+    with st.sidebar.expander("✏️ Editar Restricción Seleccionada", expanded=False):
+        edit_nombre = st.text_input("Nombre:", value=r_sel['nombre'], key=f"nom_{idx_sel}")
+        col_e1, col_e2 = st.columns(2)
+        edit_a1 = col_e1.number_input("Coef. X1:", value=r_sel['a1'], key=f"a1_{idx_sel}")
+        edit_a2 = col_e2.number_input("Coef. X2:", value=r_sel['a2'], key=f"a2_{idx_sel}")
+        
+        col_es, col_eb = st.columns(2)
+        idx_signo = ["<=", ">=", "="].index(r_sel['signo'])
+        edit_signo = col_es.selectbox("Signo:", ["<=", ">=", "="], index=idx_signo, key=f"sig_{idx_sel}")
+        edit_b = col_eb.number_input("Límite (b):", value=r_sel['b'], key=f"b_{idx_sel}")
+        
+        if st.button("💾 Guardar Cambios"):
+            st.session_state.restricciones[idx_sel] = {
+                'nombre': edit_nombre,
+                'a1': edit_a1,
+                'a2': edit_a2,
+                'signo': edit_signo,
+                'b': edit_b,
+                'color': r_sel['color']
+            }
+            st.rerun()
+
+    col_del_one, col_del_all = st.sidebar.columns(2)
+    
+    if col_del_one.button("🗑️ Eliminar esta"):
+        st.session_state.restricciones.pop(idx_sel)
+        st.rerun()
+
+    if col_del_all.button("⚠️ Borrar Todo"):
+        st.session_state.restricciones = []
+        st.rerun()
+else:
+    st.sidebar.info("No hay restricciones activas.")
+
+st.sidebar.markdown("---")
+st.sidebar.subheader("➕ Agregar Nueva Restricción")
 with st.sidebar.form("form_restriccion"):
     nombre_r = st.text_input("Nombre:", value=f"Restricción {len(st.session_state.restricciones)+1}")
     col_a1, col_a2 = st.columns(2)
@@ -52,10 +97,6 @@ with st.sidebar.form("form_restriccion"):
             'nombre': nombre_r, 'a1': a1_r, 'a2': a2_r, 'signo': signo_r, 'b': b_r, 'color': color_nuevo
         })
         st.rerun()
-
-if st.sidebar.button("🗑️ Borrar Todas las Restricciones"):
-    st.session_state.restricciones = []
-    st.rerun()
 
 # --- ÁREA PRINCIPAL: GRÁFICO Y TABLA ---
 col_grafico, col_tabla = st.columns([1.3, 1])
@@ -136,7 +177,6 @@ with col_grafico:
 with col_tabla:
     st.subheader("Tabla Resumen de Vértices")
     if puntos_interseccion:
-        # Formatear datos para mostrar en una tabla nativa de Streamlit
         tabla_datos = []
         for idx, p in enumerate(puntos_interseccion, start=1):
             tabla_datos.append({
