@@ -4,10 +4,10 @@ import matplotlib.pyplot as plt
 from itertools import combinations
 
 # Configuración de la página
-st.set_page_config(page_title="Calculadora de Programación Lineal", layout="wide")
+st.set_page_config(page_title="Calculadora de Programación Lineal 2D", layout="wide")
 
-st.title("📊 Calculadora de Programación Lineal - EcoRider S.A.")
-st.markdown("Utiliza esta herramienta para analizar las restricciones, la región factible y los vértices óptimos.")
+st.title("📊 Calculadora de Programación Lineal (2 Variables)")
+st.markdown("Herramienta interactiva para analizar el plano de decisiones, la región factible y la optimización de vértices.")
 
 # --- INICIALIZACIÓN DEL ESTADO (SESSION STATE) ---
 if "restricciones" not in st.session_state:
@@ -31,8 +31,8 @@ graficar_fo = st.sidebar.checkbox("Graficar Línea de F.O.", value=False)
 z_val = st.sidebar.number_input("Valor de Z para F.O.:", value=12000.0, step=500.0) if graficar_fo else 0
 
 st.sidebar.header("2. Controles de Zoom")
-lim_x = st.sidebar.slider("Zoom Eje X:", min_value=20, max_value=500, value=200, step=10)
-lim_y = st.sidebar.slider("Zoom Eje Y:", min_value=20, max_value=500, value=150, step=10)
+lim_x = st.sidebar.slider("Zoom Eje X1:", min_value=20, max_value=500, value=200, step=10)
+lim_y = st.sidebar.slider("Zoom Eje X2:", min_value=20, max_value=500, value=150, step=10)
 
 st.sidebar.header("3. Gestionar Restricciones")
 
@@ -43,7 +43,7 @@ if st.session_state.restricciones:
     idx_sel = opciones.index(seleccion)
     r_sel = st.session_state.restricciones[idx_sel]
 
-    # Formulario desplegable para editar la restricción seleccionada
+    # Desplegable para editar la restricción seleccionada
     with st.sidebar.expander("✏️ Editar Restricción Seleccionada", expanded=False):
         edit_nombre = st.text_input("Nombre:", value=r_sel['nombre'], key=f"nom_{idx_sel}")
         col_e1, col_e2 = st.columns(2)
@@ -166,10 +166,11 @@ with col_grafico:
         y_fo = (z_val - c1 * x1_range) / c2
         ax.plot(x1_range, y_fo, color='black', linewidth=3, linestyle='-', label=f'F.O. Z = {z_val:.0f}')
 
+    # 5. Configuración genérica de los ejes
     ax.set_xlim(0, lim_x)
     ax.set_ylim(0, lim_y)
-    ax.set_xlabel('Bicicletas Estándar (X1)', fontweight='bold')
-    ax.set_ylabel('Bicicletas Eléctricas (X2)', fontweight='bold')
+    ax.set_xlabel('Variable X1', fontweight='bold')
+    ax.set_ylabel('Variable X2', fontweight='bold')
     ax.grid(True, linestyle=':', alpha=0.6)
     ax.legend(loc='upper right', fontsize=8)
     st.pyplot(fig)
@@ -182,8 +183,8 @@ with col_tabla:
             tabla_datos.append({
                 "Vértice": f"Vértice {idx}",
                 "Intersección": f"{p['r1']} ∩ {p['r2']}",
-                "X1 (Estándar)": round(p['x1'], 2),
-                "X2 (Eléctrica)": round(p['x2'], 2),
+                "X1": round(p['x1'], 2),
+                "X2": round(p['x2'], 2),
                 "Valor Z ($)": f"${p['z']:,.2f}"
             })
         st.dataframe(tabla_datos, use_container_width=True)
